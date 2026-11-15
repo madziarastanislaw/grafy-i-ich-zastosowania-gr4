@@ -45,55 +45,67 @@ def seq_check(L: list, G):
 
 
 def components(G):
-
-    def component_req(noVisit: list, node: int, spSkl: list, G):
-        nibors = list(G[node]) #sąsiedzi obecnego wierzchołka
-        spSkl.append(node)
-        noVisit.remove(node) #usunięcie obecnego wierzchołka z listy nieodwiedzonych
-        for i in nibors:
-            if i in noVisit:
-                component_req(noVisit, i, spSkl, G) #schodzenie wgłąb
-
-    noVisit = list(G.nodes)
+    #DFS na stosie zamiast rekurencji - brak limitu głębokości dla dużych grafów
+    visited = set()
     all_sp = []
-    while len(noVisit) > 0:
-        all_sp.append([])
-        node = noVisit[0]
-        component_req(noVisit, node, all_sp[-1], G)
+    for start in G.nodes:
+        if start in visited:
+            continue
+        spSkl = []
+        stack = [start]
+        visited.add(start)
+        while stack:
+            node = stack.pop()
+            spSkl.append(node)
+            for i in G[node]: #sąsiedzi obecnego wierzchołka
+                if i not in visited:
+                    visited.add(i)
+                    stack.append(i) #schodzenie wgłąb
+        all_sp.append(sorted(spSkl))
 
     return all_sp
 
-actualList = []
-try:
-    inputList = []
-    CODE = sys.argv[1].lower()
-    if CODE != "standard" and CODE != "randomize" and CODE != "spskl":
-        print("Code (first parameter) can only be 'standard' or 'randomize' or 'spskl' - nothing else!")
-        sys.exit(1)
-    for i in range(2, len(sys.argv)):
-        inputList.append(int(sys.argv[i]))
-    idx = 0
-    for i in inputList:
-        if int(i) < 0:
-            print("Lists with integers less than 0 are not acceptable!")
+def largest_component(G):
+    #zwraca podgraf będący największą spójną składową
+    Skl = components(G)
+    if not Skl:
+        return G.copy()
+    return G.subgraph(max(Skl, key=len)).copy()
+
+
+if __name__ == "__main__":
+    actualList = []
+    try:
+        inputList = []
+        CODE = sys.argv[1].lower()
+        if CODE != "standard" and CODE != "randomize" and CODE != "spskl":
+            print("Code (first parameter) can only be 'standard' or 'randomize' or 'spskl' - nothing else!")
             sys.exit(1)
-        actualList.append([int(i), idx])
-        idx += 1
-except ValueError:
-    print("Input has to be a list of integers!")
-    sys.exit(1)
+        for i in range(2, len(sys.argv)):
+            inputList.append(int(sys.argv[i]))
+        idx = 0
+        for i in inputList:
+            if int(i) < 0:
+                print("Lists with integers less than 0 are not acceptable!")
+                sys.exit(1)
+            actualList.append([int(i), idx])
+            idx += 1
+    except ValueError:
+        print("Input has to be a list of integers!")
+        sys.exit(1)
 
 
-G = nx.Graph()
-if seq_check(actualList,G):
-    if CODE == "spskl":
-        Skl = components(G)
-        print("Spójne składowe:")
-        u = 1
-        for i in Skl:
-            print(f"{u}#   {i}")
-            u += 1
-    nx.draw(G, with_labels=True, node_color="lightblue", node_size=800, edge_color="gray", font_size=12, pos=nx.circular_layout(G))
-    plt.show()
-else:
-    print("This is not a graphic sequence!")
+    G = nx.Graph()
+    if seq_check(actualList,G):
+        if CODE == "spskl":
+            Skl = components(G)
+            print("Spójne składowe:")
+            u = 1
+            for i in Skl:
+                print(f"{u}) " + " ".join(str(v) for v in i))
+                u += 1
+            print(f"Najwieksza skladowa ma numer {Skl.index(max(Skl, key=len)) + 1}.")
+        nx.draw(G, with_labels=True, node_color="lightblue", node_size=800, edge_color="gray", font_size=12, pos=nx.circular_layout(G))
+        plt.show()
+    else:
+        print("This is not a graphic sequence!")
