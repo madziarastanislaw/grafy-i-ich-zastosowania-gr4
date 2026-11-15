@@ -33,10 +33,62 @@ weighted.py - 2 lub 3 parametry: pierwszy - liczba wierzchołków, drugi - liczb
 Wypisuje kolejno, każde zadanie pod nagłówkiem "=== Zadanie N ===":
 - krawędzie spójnego grafu losowego z wagami 1-10 (zad. 1)
 - najkrótsze ścieżki i ich długości z wierzchołka startowego - algorytm Dijkstry (zad. 2)
-- macierz odległości - Dijkstra uruchomiony z każdego wierzchołka (zad. 3)
+- macierz odległości - Dijkstra uruchomiony z każdego wierzchołka; z etykietami wierszy (od) i kolumn (do) (zad. 3)
 - tabelę z sumą odległości i odległością od najdalszego wierzchołka dla każdego wierzchołka, a pod nią centrum i centrum minimax (zad. 4); przy remisie wybierany jest wierzchołek o najmniejszym numerze
 - minimalne drzewo rozpinające - algorytm Kruskala (zad. 5)
 
 Na koniec rysuje graf z wagami oraz zaznaczone na niebiesko minimalne drzewo rozpinające.
 
 Algorytmy Dijkstry i Kruskala są zaimplementowane samodzielnie na podstawie pseudokodu z alg_3.pdf.
+
+set-4:
+3 pliki: digraph.py, kosaraju.py oraz johnson.py (johnson.py wykonuje wszystkie zadania na jednym digrafie) + pliki demo z przykładowym digrafem z input_4.pdf.
+Uruchamiać z katalogu set-4 (`cd set-4`), bo ścieżki do plików demo są względne.
+
+Szybki start:
+- `python johnson.py rand 7 0.3` - zad. 1-4 na losowym digrafie (Bellman-Ford z wierzchołka 1)
+- `python johnson.py rand 7 0.3 4` - to samo, Bellman-Ford z wierzchołka 4
+- `python johnson.py inc-m demo_inc_m_w.txt` - przykład z input_4.pdf, odtwarza macierz odległości z listingu 4
+
+Gdzie są zadania:
+- zad. 1 - digraph.py (osobno: `python digraph.py ...`)
+- zad. 2 - kosaraju.py (osobno: `python kosaraju.py ...`)
+- zad. 3 - johnson.py: random_strongly_connected (kosaraju.py), random_weights, bellman_ford
+- zad. 4 - johnson.py: add_s, johnson
+
+Zadania 3 i 4 nie mają osobnych programów - korzystają z wyników poprzednich zadań (zad. 3 potrzebuje silnie spójnego digrafu z zad. 1-2, zad. 4 - digrafu z wagami z zad. 3), więc uruchamia się je przez johnson.py, który wykonuje zad. 1-4 po kolei.
+
+Parametry wspólne dla wszystkich trzech programów - digraf podawany na jeden z dwóch sposobów:
+- `rand <n> <p>` - losowy digraf G(n,p); n - liczba całkowita, p - ułamek dziesiętny (np. 0.3); inne zapisy (1e-1, 5.0 jako n itp.) są odrzucane
+- `<adj-l | adj-m | inc-m> <plik>` - digraf wczytany z pliku w podanej reprezentacji:
+  - adj-l - lista sąsiedztwa: wiersz `i. v1 v2 ...` (następniki wierzchołka i; wiersz `i.` bez wierzchołków, gdy brak łuków wychodzących)
+  - adj-m - macierz sąsiedztwa n x n z 0/1 (1 w wierszu i, kolumnie j = łuk i -> j)
+  - inc-m - macierz incydencji n x m (kolumna = łuk: -1 w wierszu początku, 1 w wierszu końca); opcjonalnie ostatni wiersz `w: w1 ... wm` z wagami łuków z kolejnych kolumn (wagi mogą być ujemne lub 0, dlatego nie są wpisywane w samą macierz, w której -1/1 oznacza kierunek)
+
+  Niepoprawny plik (zła etykieta wiersza, pętla, powtórzony łuk, wartość spoza zakresu, niekwadratowa macierz, kolumna incydencji bez dokładnie jednego -1 i jednego 1, zła liczba wag itp.) kończy program komunikatem błędu ze wskazaniem linii/kolumny.
+
+Pliki demo (ten sam digraf z input_4.pdf): demo_adj_l.txt, demo_adj_m.txt, demo_inc_m.txt - bez wag (rys. 1, listingi 1-3); demo_inc_m_w.txt - z wagami z rys. 2.
+
+digraph.py - kodowanie digrafów i losowanie G(n,p) (zad. 1), np. `python digraph.py adj-l demo_adj_l.txt` lub `python digraph.py rand 7 0.3`. Wypisuje digraf we wszystkich trzech reprezentacjach (w tym samym formacie co pliki wejściowe, więc wynik można zapisać i wczytać ponownie; dla digrafu z wagami macierz incydencji z wierszem `w:`) i go rysuje (z wagami, jeśli są). G(n,p) zaimplementowane ręcznie: każda uporządkowana para (i, j), i != j, niezależnie z prawdopodobieństwem p daje łuk i -> j.
+
+kosaraju.py - silnie spójne składowe algorytmem Kosaraju (zad. 2), np. `python kosaraju.py rand 8 0.2` lub `python kosaraju.py adj-l demo_adj_l.txt`. Wypisuje wierzchołki kolejnych składowych i informację, czy digraf jest silnie spójny; rysuje digraf z wierzchołkami pokolorowanymi wg składowej.
+
+Uruchamianie zad. 3 i 4 (wynik pod nagłówkami "=== Zadanie 3 ===" i "=== Zadanie 4 ==="):
+- `python johnson.py rand 7 0.3` - losowy digraf, Bellman-Ford z wierzchołka 1
+- `python johnson.py rand 7 0.3 4` - Bellman-Ford z wierzchołka 4
+- `python johnson.py inc-m demo_inc_m_w.txt` - digraf z wagami z input_4.pdf; macierz z zad. 4 = listing 4
+- `python johnson.py adj-l demo_adj_l.txt` - ten sam digraf z pliku, wagi losowane
+
+Zad. 3 (johnson.py) - losowy silnie spójny digraf z wagami i algorytm Bellmana-Forda:
+- digraf silnie spójny: dla `rand` - jeśli digraf z zad. 1 nie jest silnie spójny, losowany jest nowy G(n,p) aż Kosaraju zwróci jedną składową (do 100 prób); dla pliku - digraf musi być silnie spójny, inaczej program kończy się po zad. 2
+- wagi: losowane z [-5, 10]; gdy powstanie cykl o ujemnej wadze (wykrywany Bellmanem-Fordem), wszystkie wagi są losowane ponownie (do 100 prób). Dla pliku inc-m z wierszem `w:` używane są wagi z pliku (cykl o ujemnej wadze = błąd)
+- wypisuje macierz incydencji z wagami oraz najkrótsze ścieżki i ich długości z wierzchołka startowego (Bellman-Ford, alg. 4 z alg_4.pdf), np.:
+  `d(7) = -5 ==> [1 - 5 - 7]`
+
+Zad. 4 (johnson.py) - algorytm Johnsona (alg. 5-6 z alg_4.pdf): dodaje wierzchołek s = 0 z łukami s -> v o wadze 0, Bellmanem-Fordem z s wyznacza h[v], przeskalowuje wagi na nieujemne w'(u,v) = w(u,v) + h[u] - h[v], uruchamia Dijkstrę (z set-3) z każdego wierzchołka i odtwarza odległości D[u][v] = d'(u,v) - h[u] + h[v]. Wypisuje macierz odległości z etykietami wierszy (od) i kolumn (do).
+
+johnson.py - uruchamia zad. 1-4 na jednym digrafie: `python johnson.py rand <n> <p> [start]` lub `python johnson.py <adj-l | adj-m | inc-m> <plik> [start]`, start - wierzchołek startowy Bellmana-Forda (domyślnie 1). Każde zadanie wypisywane pod nagłówkiem "=== Zadanie N ===". Na koniec rysuje digraf z zad. 1-2 (kolory = składowe) obok digrafu z wagami z zad. 3-4.
+
+Zalecane parametry: n do ok. 10 przy p ok. 0.2-0.3. Dla gęstszych digrafów wagi z [-5, 10] prawie zawsze tworzą cykl o ujemnej wadze i program kończy się błędem po 100 próbach.
+
+Kosaraju, Bellman-Ford i Johnson są zaimplementowane samodzielnie na podstawie pseudokodu z alg_4.pdf.
