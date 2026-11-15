@@ -3,7 +3,7 @@ import networkx as nx
 import random
 import sys
 
-from connected import random_connected_graph #korzysta z set-1 i set-2
+from connected import random_connected_graph, parse_int, parse_edges_or_prob #korzysta z set-1 i set-2
 
 INF = float("inf")
 
@@ -124,14 +124,11 @@ if __name__ == "__main__":
         sys.exit(1)
 
     try:
-        N = int(sys.argv[1])
-        if '.' in sys.argv[2]:
-            MP = float(sys.argv[2])
-        else:
-            MP = int(sys.argv[2])
-        START = int(sys.argv[3]) if len(sys.argv) > 3 else 1
-    except ValueError:
-        print("Input values must be an integer, integer/float and optionally an integer")
+        N = parse_int(sys.argv[1])
+        MP = parse_edges_or_prob(sys.argv[2])
+        START = parse_int(sys.argv[3]) if len(sys.argv) > 3 else 1
+    except ValueError as e:
+        print(e)
         sys.exit(1)
 
     try:
@@ -162,9 +159,13 @@ if __name__ == "__main__":
     print("\n=== Zadanie 3 ===")
     print("Macierz odleglosci:")
     D = distance_matrix(G, w)
-    cell = len(str(max(max(row) for row in D))) + 1
-    for row in D:
-        print("".join(str(x).rjust(cell) for x in row))
+    nodes = sorted(G.nodes)
+    cell = max(len(str(max(max(row) for row in D))), len(str(nodes[-1]))) + 1
+    lab = len(str(nodes[-1])) #szerokość kolumny z etykietami wierszy
+    print(" "*lab + " |" + "".join(str(v).rjust(cell) for v in nodes)) #etykiety kolumn
+    print("-"*lab + "-+" + "-"*(cell*len(nodes)))
+    for v, row in zip(nodes, D):
+        print(str(v).rjust(lab) + " |" + "".join(str(x).rjust(cell) for x in row)) #etykieta wiersza + odległości
 
     print("\n=== Zadanie 4 ===")
     print(f"{'Wierzcholek':>11} | {'Suma odleglosci':>15} | {'Odleglosc od najdalszego':>24}")

@@ -26,9 +26,9 @@ Zadanie 6 (graf hamiltonowski) - brak.
 set-3:
 2 pliki: connected.py oraz weighted.py (wszystkie zadania na jednym wylosowanym grafie)
 
-connected.py - 2 parametry jak w randoming.py; losuje wyłącznie spójny graf o zadanej liczbie wierzchołków (korzysta z randoming.py z set-1 oraz spójnych składowych z seq.py z set-2). Kończy się błędem, gdy liczba krawędzi jest mniejsza niż n-1 lub gdy w 100 próbach nie uda się wylosować grafu spójnego.
+connected.py - 2 parametry: liczba wierzchołków (int) oraz liczba krawędzi (int) -> G(n,l) lub prawdopodobieństwo (ułamek dziesiętny, np. 0.3) -> G(n,p); inne zapisy (1e-1, inf, 5.0 jako liczba wierzchołków itp.) są odrzucane. Losuje wyłącznie spójny graf o wierzchołkach 1..n: graf G(n,l)/G(n,p) generowany jest ręcznie zaimplementowanym modelem Erdősa-Rényiego (funkcja random_graph), a spójność sprawdzana spójnymi składowymi z seq.py z set-2; niespójne grafy są odrzucane i losowane ponownie. Kończy się błędem, gdy liczba krawędzi jest mniejsza niż n-1 lub gdy w 100 próbach nie uda się wylosować grafu spójnego.
 
-weighted.py - 2 lub 3 parametry: pierwszy - liczba wierzchołków, drugi - liczba krawędzi/prawdopodobieństwo (jak w randoming.py), trzeci (opcjonalny) - wierzchołek startowy dla algorytmu Dijkstry (domyślnie 1). Graf losowany jest przez connected.py, więc obowiązują te same ograniczenia (np. `weighted.py 12 20` lub `weighted.py 12 0.4 3`).
+weighted.py - 2 lub 3 parametry: pierwszy - liczba wierzchołków, drugi - liczba krawędzi/prawdopodobieństwo (jak w connected.py), trzeci (opcjonalny) - wierzchołek startowy dla algorytmu Dijkstry (domyślnie 1). Graf losowany jest przez connected.py, więc obowiązują te same ograniczenia (np. `weighted.py 12 20` lub `weighted.py 12 0.4 3`).
 
 Wypisuje kolejno, każde zadanie pod nagłówkiem "=== Zadanie N ===":
 - krawędzie spójnego grafu losowego z wagami 1-10 (zad. 1)
