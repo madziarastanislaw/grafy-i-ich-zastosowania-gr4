@@ -1,0 +1,1 @@
+python zadanie.py <N>
