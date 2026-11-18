@@ -94,22 +94,23 @@ Zalecane parametry: n do ok. 10 przy p ok. 0.2-0.3. Dla gęstszych digrafów wag
 Kosaraju, Bellman-Ford i Johnson są zaimplementowane samodzielnie na podstawie pseudokodu z alg_4.pdf.
 
 set-6:
-2 pliki: zad1_pagerank.py (zad. 1) oraz zad2_tsp.py (zad. 2) + pliki danych: graf_przyklad.txt (digraf z input_6.pdf, listing 1) i xqf131.dat.txt (131 punktów do zad. 2).
-Uruchamiać z katalogu set-6 (`cd set-6`), bo ścieżki do plików danych są względne.
-Na górze każdego programu jest blok `KONFIGURACJA` ze stałymi (plik wejściowy, parametry algorytmu); każdą z nich można też nadpisać flagą z linii poleceń (`--help` pokazuje wszystkie).
+2 pliki: zad1_pagerank.py (zad. 1) oraz zad2_tsp.py (zad. 2) + pliki danych: demo_adj_l.txt, demo_adj_m.txt, demo_inc_m.txt (digraf z input_6.pdf, listing 1, w trzech reprezentacjach z set-4; wierzchołki A-L = 1-12) i xqf131.dat.txt (131 punktów do zad. 2).
+Uruchamiać z katalogu set-6 (`cd set-6`), bo ścieżki do plików podawanych na wejściu są względne. Zad. 1 korzysta z set-4/digraph.py, więc wymaga `networkx` (jak set-4).
+Na górze każdego programu są stałe z wartościami domyślnymi (wejście, parametry algorytmu); każdą z nich można też nadpisać flagą z linii poleceń (`--help` w zad. 1, w zad. 2 `python zad2_tsp.py --help`).
 
-zad1_pagerank.py - PageRank dla digrafu, dwie metody na tym samym grafie (d = 0.15 domyślnie):
+zad1_pagerank.py - PageRank dla digrafu, dwie metody na tym samym digrafie (d = 0.15 domyślnie):
 - (a) błądzenie przypadkowe z teleportacją; PageRank = częstość odwiedzin po N krokach (domyślnie 1000000)
 - (b) iteracja wektora obsadzeń p(t+1) = p(t)P, P_ij = (1-d)A_ij/d_i + d/n, od p(0) = (1/n, ..., 1/n) aż do zbieżności; gdy brak zbieżności w `--max-iter` krokach, wynikiem jest średnia wektorów
-Wypisuje oba rankingi (od najważniejszej strony) oraz porównanie metod (maksymalna i średnia różnica wartości, zgodność kolejności).
-- `python zad1_pagerank.py` - graf z graf_przyklad.txt; metoda (b) odtwarza wartości z listingu 2(b) z input_6.pdf (I = 0.150941, ..., K = 0.029892)
-- `python zad1_pagerank.py --zrodlo plik --plik moj_graf.txt` - inny graf z pliku
-- `python zad1_pagerank.py --zrodlo losowy --n 20 --max-wyjscie 4 --ziarno 7` - losowy digraf, z każdego wierzchołka wychodzi >= 1 krawędź (`--petle` dopuszcza pętle)
-Format pliku: jedna linia = jeden wierzchołek, `A : E, F, I` (następniki); puste linie i linie z `#` są pomijane, powtórzone krawędzie usuwane. Błędy (brak `:`, wierzchołek bez krawędzi wychodzących, krawędź do nieistniejącego wierzchołka, powtórzona definicja) kończą program komunikatem z numerem linii.
+Wypisuje oba rankingi (od najważniejszego wierzchołka) oraz porównanie metod (maksymalna i średnia różnica wartości, zgodność kolejności).
+Digraf podawany tak samo jak w set-4 (wierzchołki 1..n):
+- `python zad1_pagerank.py` - przykład z input_6.pdf (demo_adj_l.txt); metoda (b) odtwarza listing 2(b), np. wierzchołek 9 (I) = 0.150941, 11 (K) = 0.029892
+- `python zad1_pagerank.py adj-m demo_adj_m.txt` (też `adj-l`, `inc-m`) - digraf z pliku; formaty jak w set-4 (adj-l: `i. v1 v2 ...`, adj-m: macierz 0/1, inc-m: macierz incydencji -1/0/1); wymagane co najmniej jeden łuk wychodzący z każdego wierzchołka, inaczej błąd
+- `python zad1_pagerank.py rand 12 0.3` - losowy digraf G(n,p) z set-4; wierzchołkom bez łuków wychodzących dolosowywany jest jeden łuk do innego wierzchołka
+Opcje: `--d`, `--krokow`, `--eps`, `--max-iter`, `--ziarno` (powtarzalne wyniki), `--rysuj` (rysuje digraf).
 
-zad2_tsp.py - problem komiwojażera, symulowane wyżarzanie (Metropolis-Hastings) z ruchami 2-opt (alg. 1 z alg_6.pdf): losowane są dwie różne, niesąsiednie krawędzie (a,b), (c,d), zamieniane na (a,c), (b,d) przez odwrócenie fragmentu cyklu między b a c. Różnica długości cyklu liczona jest w O(1), a fragment odwracany tylko przy akceptacji ruchu. Cykl początkowy = kolejność punktów z pliku.
+zad2_tsp.py - problem komiwojażera, symulowane wyżarzanie (Metropolis-Hastings) z ruchami 2-opt (alg. 1 z alg_6.pdf): losowane są dwie różne, niesąsiednie krawędzie (a,b), (c,d), zamieniane na (a,c), (b,d) przez odwrócenie fragmentu cyklu między b a c. Różnica długości cyklu liczona jest w O(1), a fragment odwracany tylko przy akceptacji ruchu. Cykl początkowy = kolejność punktów z pliku. Wejście to plik ze współrzędnymi punktów (`x y` w linii), nie digraf.
 - `python zad2_tsp.py` - xqf131.dat.txt, chłodzenie kwadratowe T: 10 -> 0.004 w 100 poziomach, 50000 iteracji na poziom, 5 powtórzeń (kolejne startują od najlepszego dotąd cyklu); rysuje cykl początkowy i wynikowy oraz zapisuje wynik do cykl_wynik.png
 - `python zad2_tsp.py --chlodzenie liniowe` (też: wykladnicze, kwadratowe), `--max-it`, `--powtorzen`, `--t-start`, `--t-koniec`, `--kroki-chlodzenia`, `--ziarno`, `--plik`, `--start-od-zera`, `--bez-okna`, `--wykres <plik.png>`
 Typowy wynik dla xqf131: długość ok. 567-570 (cykl początkowy: 4705.907).
 
-Algorytmy PageRank i symulowanego wyżarzania są zaimplementowane samodzielnie na podstawie input_6.pdf i alg_6.pdf (matplotlib tylko do rysowania).
+PageRank i symulowane wyżarzanie są zaimplementowane samodzielnie na podstawie input_6.pdf i alg_6.pdf (matplotlib tylko do rysowania).

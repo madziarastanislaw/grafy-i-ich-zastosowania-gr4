@@ -1,33 +1,22 @@
-"""Zestaw 6, zadanie 2: komiwojazer - symulowane wyzarzanie (Metropolis-Hastings + ruch 2-opt).
-
-Uruchomienie (wszystkie opcje sa opcjonalne, domyslne wartosci z bloku KONFIGURACJA):
-    python zad2_tsp.py
-    python zad2_tsp.py --plik inne_punkty.txt --powtorzen 10 --max-it 100000
-    python zad2_tsp.py --chlodzenie liniowe --ziarno 5 --bez-okna
-"""
-
 import argparse
 import math
 import random
 
-# ============================== KONFIGURACJA ==============================
-PLIK_PUNKTOW = "xqf131.dat.txt"   # plik: w kazdej linii "x y"
+PLIK_PUNKTOW = "xqf131.dat.txt"
 
-CHLODZENIE = "kwadratowe"         # "kwadratowe" | "liniowe" | "wykladnicze"
-KROKI_CHLODZENIA = 100            # liczba poziomow temperatury (i = 100 ... 2 w pseudokodzie)
-T_START = 10.0                    # temperatura poczatkowa (0.001 * 100^2 = 10)
-T_KONIEC = 0.004                  # temperatura koncowa    (0.001 * 2^2   = 0.004)
-MAX_IT = 50_000                   # iteracji na jeden poziom temperatury
-POWTORZEN = 5                     # ile razy powtorzyc cala procedure
-START_Z_NAJLEPSZEGO = True        # kolejne powtorzenia startuja od najlepszego dotad cyklu
-ZIARNO = None                     # None = losowe, liczba = powtarzalne wyniki
-PLIK_WYKRESU = "cykl_wynik.png"   # None = nie zapisuj
-POKAZ_OKNO = True                 # czy otworzyc okno z wykresem
-# ==========================================================================
+CHLODZENIE = "kwadratowe"
+KROKI_CHLODZENIA = 100
+T_START = 10.0
+T_KONIEC = 0.004
+MAX_IT = 50_000
+POWTORZEN = 5
+START_Z_NAJLEPSZEGO = True
+ZIARNO = None
+PLIK_WYKRESU = "cykl_wynik.png"
+POKAZ_OKNO = True
 
 
 def wczytaj_punkty(sciezka):
-    """Wczytuje punkty z pliku: kazda niepusta linia to 'x y' (rozdzielone bialymi znakami)."""
     punkty = []
     with open(sciezka, encoding="utf-8") as f:
         for nr, linia in enumerate(f, 1):
@@ -52,7 +41,6 @@ def dlugosc_cyklu(cykl, dist):
 
 
 def harmonogram_temperatur(rodzaj, kroki, t_start, t_koniec):
-    """Zwraca liste temperatur od t_start do t_koniec (malejaco), 'kroki' poziomow."""
     if kroki < 2:
         return [t_start]
     if rodzaj == "liniowe":
@@ -61,33 +49,23 @@ def harmonogram_temperatur(rodzaj, kroki, t_start, t_koniec):
         q = (t_koniec / t_start) ** (1.0 / (kroki - 1))
         return [t_start * q ** k for k in range(kroki)]
     if rodzaj == "kwadratowe":
-        # T proporcjonalne do i^2, gdzie i maleje liniowo; krance dokladnie t_start i t_koniec
         a, b = math.sqrt(t_start), math.sqrt(t_koniec)
         return [(a + (b - a) * k / (kroki - 1)) ** 2 for k in range(kroki)]
     raise ValueError(f"nieznany rodzaj chlodzenia: {rodzaj}")
 
 
 def symulowane_wyzarzanie(cykl_start, dist, temperatury, max_it):
-    """Algorytm 1 z alg_6.pdf. Ruch 2-opt: krawedzie (a,b), (c,d) -> (a,c), (b,d)
-    przez odwrocenie fragmentu cyklu miedzy b a c.
-
-    Roznica dlugosci liczona w O(1) (d(Pnew) - d(P) = nowe krawedzie - stare krawedzie);
-    odwracanie fragmentu wykonujemy tylko przy akceptacji. Zwraca (najlepszy cykl,
-    jego dlugosc, ostatni cykl).
-    """
     cykl = list(cykl_start)
     n = len(cykl)
     dl = dlugosc_cyklu(cykl, dist)
     najlepszy, najlepsza_dl = list(cykl), dl
     if n < 4:
-        return najlepszy, najlepsza_dl, cykl     # 2-opt nie ma sensu dla n < 4
+        return najlepszy, najlepsza_dl, cykl
 
     los = random.random
     losint = random.randrange
     for T in temperatury:
         for _ in range(max_it):
-            # losowanie dwoch roznych, niesasiednich krawedzi: (i,i+1) oraz (j,j+1), j >= i+2;
-            # krawedz (0, n-1) jest sasiednia z (n-1, 0) tj. i=0, j=n-1 - pomijamy.
             i = losint(n - 2)
             j = losint(i + 2, n)
             if i == 0 and j == n - 1:
@@ -100,7 +78,6 @@ def symulowane_wyzarzanie(cykl_start, dist, temperatury, max_it):
                 dl += delta
                 if dl < najlepsza_dl - 1e-12:
                     najlepszy, najlepsza_dl = list(cykl), dl
-    # dl akumulowane przyrostami - przeliczamy dla uniknięcia dryfu bledu zmiennoprzecinkowego
     return najlepszy, dlugosc_cyklu(najlepszy, dist), cykl
 
 
@@ -153,7 +130,7 @@ def main():
     dist = macierz_odleglosci(punkty)
     temperatury = harmonogram_temperatur(arg.chlodzenie, arg.kroki_chlodzenia, arg.t_start, arg.t_koniec)
 
-    cykl0 = list(range(n))                      # cykl poczatkowy: kolejnosc z pliku
+    cykl0 = list(range(n))
     dl0 = dlugosc_cyklu(cykl0, dist)
     print(f"Punktow: {n}, cykl poczatkowy (kolejnosc z pliku): dlugosc = {dl0:.3f}")
     print(f"Chlodzenie: {arg.chlodzenie}, T: {temperatury[0]:.4g} -> {temperatury[-1]:.4g}, "
